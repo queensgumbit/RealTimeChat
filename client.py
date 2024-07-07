@@ -35,31 +35,49 @@ class ChatClientApp:
         self.send_button.pack(pady=5)
 
         self.client_name = ""
-        self.get_username()
+        self.name_color = "black"  # Default color
+        self.get_username(root)
         self.start_connection()
 
         # Start a thread to handle incoming messages
         self.receive_thread = threading.Thread(target=self.receive_messages, daemon=True)
         self.receive_thread.start()
 
-    def get_username(self):
+    def get_username(self, root):
         self.client_name = simpledialog.askstring("Username", "What's your name?", parent=self.root)
         if not self.client_name:
             messagebox.showerror("Error", "Name cannot be empty")
-            self.get_username()
-        #want to add feature to choose your message color!
+            self.get_username(root)
 
+        # Color selection
+        option_list = ['red', 'blue', 'purple', 'yellow']
+        self.value_inside = tk.StringVar(root)
+        self.value_inside.set(option_list[0])  # Set default value
+        self.question_menu = tk.OptionMenu(root, self.value_inside, *option_list)
+        self.question_menu.pack()
+        
+        # Button to confirm color choice
+        self.confirm_button = tk.Button(root, text="Confirm Color", command=self.choose_color)
+        self.confirm_button.pack(pady=5)
+
+    def choose_color(self):
+        self.name_color = self.value_inside.get()
+        messagebox.showinfo("Color Selected", f"You have chosen {self.name_color} for your messages.")
+        
     def start_connection(self):
         try:
             client.connect(ADDR)
             print(f'[CONNECTED] {self.client_name} connected successfully to the server')
-            self.send(self.client_name)
         except socket.error as e:
             messagebox.showerror("Error", f"Unable to connect to the server: {e}")
             print(f'[ERROR] Unable to connect {self.client_name} to the server: {e}')
             self.root.quit()
 
     def send(self, msg):
+        if not client:
+            print(f"[ERROR] No client connection established")
+            return
+
         try:
             message = msg.encode(FORMAT)
             msg_length = len(message)
@@ -67,7 +85,7 @@ class ChatClientApp:
             send_length += b' ' * (HEADER - len(send_length))
             client.send(send_length)
             client.send(message)
-            self.update_chat_log(f"You: {msg}")
+            self.update_chat_log(f"{self.client_name}: {msg}")
         except Exception as e:
             print(f'[ERROR] {e}')
             messagebox.showerror("Error", "Message sending failed")
@@ -97,7 +115,16 @@ class ChatClientApp:
 
     def update_chat_log(self, msg):
         self.chat_log.config(state=tk.NORMAL)
-        self.chat_log.insert(tk.END, f"{msg}\n")
+        
+        parts = msg.split(": ", 1)
+        if len(parts) == 2:
+            name, message = parts
+            self.chat_log.insert(tk.END, f"{name}: ", name)
+            self.chat_log.tag_config(name, foreground=self.name_color)
+            self.chat_log.insert(tk.END, f"{message}\n")
+        else:
+            self.chat_log.insert(tk.END, msg + "\n")
+        
         self.chat_log.yview(tk.END)
         self.chat_log.config(state=tk.DISABLED)
 
