@@ -112,8 +112,8 @@ class ChatClientApp:
             except Exception as e:
                 print(f"[ERROR] {e}")
                 break
-
-    def update_chat_log(self, msg):
+#Bug with broadcasting messages from all clients(what the server gets to each clients window)
+        def update_chat_log(self, msg):
         self.chat_log.config(state=tk.NORMAL)
         
         parts = msg.split(": ", 1)
