@@ -10,7 +10,6 @@ SERVER = '192.168.56.1'  # Replace with your server's IP address
 DISCONNECT_MSG = 'disconnect!'
 ADDR = (SERVER, PORT)
 
-# Initialize socket
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 class ChatClientApp:
@@ -39,7 +38,6 @@ class ChatClientApp:
         self.get_username(root)
         self.start_connection()
 
-        # Start a thread to handle incoming messages
         self.receive_thread = threading.Thread(target=self.receive_messages, daemon=True)
         self.receive_thread.start()
 
@@ -49,21 +47,19 @@ class ChatClientApp:
             messagebox.showerror("Error", "Name cannot be empty")
             self.get_username(root)
 
-        # Color selection
         option_list = ['red', 'blue', 'purple', 'yellow']
         self.value_inside = tk.StringVar(root)
-        self.value_inside.set(option_list[0])  # Set default value
+        self.value_inside.set(option_list[0])
         self.question_menu = tk.OptionMenu(root, self.value_inside, *option_list)
         self.question_menu.pack()
-        
-        # Button to confirm color choice
+
         self.confirm_button = tk.Button(root, text="Confirm Color", command=self.choose_color)
         self.confirm_button.pack(pady=5)
 
     def choose_color(self):
         self.name_color = self.value_inside.get()
         messagebox.showinfo("Color Selected", f"You have chosen {self.name_color} for your messages.")
-        
+
     def start_connection(self):
         try:
             client.connect(ADDR)
@@ -99,7 +95,7 @@ class ChatClientApp:
                 self.root.quit()
             else:
                 self.send(msg)
-            self.message_input.delete(0, tk.END)  # Clear the input field
+            self.message_input.delete(0, tk.END)
 
     def receive_messages(self):
         while True:
@@ -108,14 +104,14 @@ class ChatClientApp:
                 if msg_length:
                     msg_length = int(msg_length)
                     msg = client.recv(msg_length).decode(FORMAT)
-                    self.update_chat_log(f"Server: {msg}")
+                    self.update_chat_log(f"{msg}")
             except Exception as e:
                 print(f"[ERROR] {e}")
                 break
-#Bug with broadcasting messages from all clients(what the server gets to each clients window)
-        def update_chat_log(self, msg):
+
+    def update_chat_log(self, msg):
         self.chat_log.config(state=tk.NORMAL)
-        
+
         parts = msg.split(": ", 1)
         if len(parts) == 2:
             name, message = parts
@@ -124,7 +120,7 @@ class ChatClientApp:
             self.chat_log.insert(tk.END, f"{message}\n")
         else:
             self.chat_log.insert(tk.END, msg + "\n")
-        
+
         self.chat_log.yview(tk.END)
         self.chat_log.config(state=tk.DISABLED)
 
