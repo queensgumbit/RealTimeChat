@@ -6,7 +6,7 @@ from tkinter import simpledialog, messagebox
 PORT = 5050
 FORMAT = 'utf-8'
 HEADER = 64
-SERVER = '192.168.56.1'  # Replace with your server's IP address
+SERVER = '192.168.56.1'  
 DISCONNECT_MSG = 'disconnect!'
 ADDR = (SERVER, PORT)
 
