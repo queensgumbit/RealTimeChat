@@ -1,39 +1,54 @@
 import socket
 import threading
 
-
 SERVER = socket.gethostbyname(socket.gethostname())
 PORT = 5050
-#MEMBERS = 4
 HEADER = 64
 FORMAT = 'utf-8'
 DISCONNECT_MSG = 'disconnect!'
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ADDR = (SERVER, PORT)
-connected_clients = []   #list of all connected clients in form of tuple (addr,client_name)
+connected_clients = []
 
-def client_handler(client, addr):
-    client_name_length = client.recv(HEADER).decode(FORMAT)
-    client_name = client.recv(int(client_name_length)).decode(FORMAT)
-    connected_clients.append((addr, client_name))
+def broadcast(message, sender_client):
+    print(f"[BROADCASTING] Broadcasting message: {message}")
+    for client_socket, client_name in connected_clients:
+        if client_socket != sender_client:
+            try:
+                message_length = len(message)
+                send_length = str(message_length).encode(FORMAT)
+                send_length += b' ' * (HEADER - len(send_length))
+                client_socket.send(send_length)
+                client_socket.send(message.encode(FORMAT))
+                print(f"[SENT] Message sent to {client_name}")
+            except Exception as e:
+                print(f"[ERROR] Failed to send message to {client_name}: {e}")
+
+def client_handler(client_socket, addr):
+    client_name_length = client_socket.recv(HEADER).decode(FORMAT)
+    client_name = client_socket.recv(int(client_name_length)).decode(FORMAT)
+    connected_clients.append((client_socket, client_name))
     print(f'[CONNECTED] {client_name} is connected.')
+
     connected = True
     while connected:
-        msg_length = client.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            try:
+        try:
+            msg_length = client_socket.recv(HEADER).decode(FORMAT)
+            if msg_length:
                 msg_length = int(msg_length)
-                msg = client.recv(msg_length).decode(FORMAT)
+                msg = client_socket.recv(msg_length).decode(FORMAT)
                 if msg == DISCONNECT_MSG:
                     connected = False
-                print(f"[{client_name}] : {msg}")
-            except ValueError:
-                print(f"[ERROR] Invalid message length received from {addr}")
-        else:
+                else:
+                    print(f"[{client_name}] : {msg}")
+                    broadcast(msg, client_socket)
+        except Exception as e:
+            print(f"[ERROR] {e}")
             connected = False
-    connected_clients.remove((addr, client_name))
-    client.close()
+
+    connected_clients.remove((client_socket, client_name))
+    client_socket.close()
     print(f'[DISCONNECTED] {client_name} ({addr}) disconnected.')
 
 def bindServer():
@@ -47,8 +62,9 @@ def start_listening():
     server.listen()
     print('[LISTENING] Server is listening...')
     while True:
-        client, addr = server.accept()
-        thread = threading.Thread(target=client_handler, args=(client, addr))
+        client_socket, addr = server.accept()
+        print(f"[NEW CONNECTION] {addr} connected.")
+        thread = threading.Thread(target=client_handler, args=(client_socket, addr))
         thread.start()
         print(f"\n[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
