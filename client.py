@@ -63,6 +63,7 @@ class ChatClientApp:
     def start_connection(self):
         try:
             client.connect(ADDR)
+            self.send(self.client_name)  # Send client name to server upon connection
             print(f'[CONNECTED] {self.client_name} connected successfully to the server')
         except socket.error as e:
             messagebox.showerror("Error", f"Unable to connect to the server: {e}")
@@ -81,7 +82,6 @@ class ChatClientApp:
             send_length += b' ' * (HEADER - len(send_length))
             client.send(send_length)
             client.send(message)
-            self.update_chat_log(f"{self.client_name}: {msg}")
         except Exception as e:
             print(f'[ERROR] {e}')
             messagebox.showerror("Error", "Message sending failed")
@@ -94,7 +94,9 @@ class ChatClientApp:
                 client.close()
                 self.root.quit()
             else:
-                self.send(msg)
+                full_msg = f"{self.client_name}: {msg}"
+                self.send(full_msg)
+                self.update_chat_log(full_msg)  # Update chat log immediately after sending
             self.message_input.delete(0, tk.END)
 
     def receive_messages(self):
@@ -102,7 +104,7 @@ class ChatClientApp:
             try:
                 msg_length = client.recv(HEADER).decode(FORMAT)
                 if msg_length:
-                    msg_length = int(msg_length)
+                    msg_length = int(msg_length.strip())
                     msg = client.recv(msg_length).decode(FORMAT)
                     self.update_chat_log(f"{msg}")
             except Exception as e:
