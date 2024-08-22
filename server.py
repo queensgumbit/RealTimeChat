@@ -26,23 +26,29 @@ def broadcast(message, sender_client_socket):
             except Exception as e:
                 print(f"[ERROR] Failed to send message to {client.nickname}: {e}")
 
+
 def client_handler(client_socket, addr):
     try:
-        nickname_length = client_socket.recv(HEADER)
-        client_hello = chat_pb2.ClientHello()
-        client_hello.ParseFromString(nickname_length)
-        client_name = client_hello.nickname
-        new_client = ClientConnection(client_socket, client_name)
-        connected_clients.append(new_client)
-        print(f'[CONNECTED] {client_name} is connected.')
+        nickname_length = client_socket.recv(HEADER).decode(FORMAT)
+        if nickname_length:
+            nickname_length = int(nickname_length.strip())
+            nickname_data = client_socket.recv(nickname_length)
+            nickname_data = bytes(nickname_data)
+            client_hello = chat_pb2.ClientHello()
+            client_hello.ParseFromString(nickname_data)
+            client_name = client_hello.nickname
+            new_client = ClientConnection(client_socket, client_name)
+            connected_clients.append(new_client)
+            print(f'[CONNECTED] {client_name}is connected.')
+            connected = True
 
-        connected = True
         while connected:
             try:
                 msg_length = client_socket.recv(HEADER).decode(FORMAT)
                 if msg_length:
                     msg_length = int(msg_length.strip())
                     msg_data = client_socket.recv(msg_length)
+                    msg_data = bytes(msg_data)
                     client_msg = chat_pb2.ClientSendMsg()
                     client_msg.ParseFromString(msg_data)
                     msg = client_msg.msg
