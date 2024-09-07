@@ -4,8 +4,8 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox
 import customtkinter as ctk
 from tkinter import Toplevel
-import chat_pb2 # Import the generated protobuf classes
-
+import chat_pb2  # Import the generated protobuf classes
+import struct
 PORT = 5050
 FORMAT = 'utf-8'
 HEADER = 64
@@ -99,11 +99,9 @@ class ChatClientApp:
             #client_hello = chat_pb2.ClientHello(nickname=self.client_name)
             #self.send(client_hello.SerializeToString())
             # Send client name to server upon connection
-            msg = MyMessage(...)
+            msg = chat_pb2.ClientSendMsg(...)
             serialized_msg = msg.SerializeToString()
-            ## Here notice i used little endian for the integer >L would be big endian
-            ## But it's just an example
-            socket.send(struct.pack("<L", len(serialized_msg))
+            socket.send(struct.pack("<L", len(serialized_msg)))
             socket.send(serialized_msg)
 
             print(f'[CONNECTED] {self.client_name} connected successfully to the server')
