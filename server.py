@@ -44,14 +44,20 @@ def client_handler(client_socket, addr):
 
         while connected:
             try:
-                msg_length = client_socket.recv(HEADER).decode(FORMAT)
-                if msg_length:
-                    msg_length = int(msg_length.strip())
-                    msg_data = client_socket.recv(msg_length)
-                    msg_data = bytes(msg_data)
-                    client_msg = chat_pb2.ClientSendMsg()
-                    client_msg.ParseFromString(msg_data)
-                    msg = client_msg.msg
+               # msg_length = client_socket.recv(HEADER).decode(FORMAT)
+               # if msg_length:
+                   # msg_length = int(msg_length.strip())
+                   # msg_data = client_socket.recv(msg_length)
+                   # msg_data = bytes(msg_data)
+                   # client_msg = chat_pb2.ClientSendMsg()
+                   # client_msg.ParseFromString(msg_data)
+                   # msg = client_msg.msg
+                   msg_len_bytes = socket.recv(4)
+                   msg_len = struct.unpack("<L", msg_len_bytes)[0]
+                   msg_data = socket.recv(msg_len)
+                   client_msg = chat_pb2.ClientSendMsg()
+                   client_msg.ParseFromString(msg_data)
+
                     if msg == DISCONNECT_MSG:
                         connected = False
                     else:
