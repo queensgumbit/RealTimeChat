@@ -1,9 +1,8 @@
 import socket
 import threading
 import chat_pb2  # Import the generated protobuf classes
-
 from client import FORMAT
-
+import  struct
 SERVER = '0.0.0.0'
 PORT = 5050
 HEADER = 64
@@ -58,11 +57,12 @@ def client_handler(client_socket, addr):
                    client_msg = chat_pb2.ClientSendMsg()
                    client_msg.ParseFromString(msg_data)
 
-                    if msg == DISCONNECT_MSG:
-                        connected = False
-                    else:
-                        print(f"[{client_name}] : {msg}")
-                        broadcast(msg_data, client_socket)
+                   if msg_data == DISCONNECT_MSG:
+                       connected = False
+                   else:
+                       print(f"[{client_name}] : {msg_data}")
+                       broadcast(msg_data, client_socket)
+
             except Exception as e:
                 print(f"[ERROR] {e}")
                 connected = False
