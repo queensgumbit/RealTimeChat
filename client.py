@@ -95,9 +95,17 @@ class ChatClientApp:
 
     def start_connection(self):
         try:
-            client.connect((self.server_ip, self.server_port))
-            client_hello = chat_pb2.ClientHello(nickname=self.client_name)
-            self.send(client_hello.SerializeToString())  # Send client name to server upon connection
+            #client.connect((self.server_ip, self.server_port))
+            #client_hello = chat_pb2.ClientHello(nickname=self.client_name)
+            #self.send(client_hello.SerializeToString())
+            # Send client name to server upon connection
+            msg = MyMessage(...)
+            serialized_msg = msg.SerializeToString()
+            ## Here notice i used little endian for the integer >L would be big endian
+            ## But it's just an example
+            socket.send(struct.pack("<L", len(serialized_msg))
+            socket.send(serialized_msg)
+
             print(f'[CONNECTED] {self.client_name} connected successfully to the server')
         except socket.gaierror:
             messagebox.showerror("Error", "Invalid IP address. Please check and try again.")
