@@ -1,6 +1,5 @@
 import socket
 import threading
-import tkinter as tk
 from tkinter import simpledialog, messagebox
 import customtkinter as ctk
 from tkinter import Toplevel
@@ -16,6 +15,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 class ChatClientApp:
     def __init__(self, root):
         self.root = root
+        #self.chat_pb2 = chat_pb2
         self.root.title("Chatic - Real time chat")
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("green")
@@ -48,7 +48,7 @@ class ChatClientApp:
         self.get_username_and_server_info(root)
         self.start_connection()
 
-        self.receive_thread = threading.Thread(target=self.receive_messages, daemon=True)
+        self.receive_thread = threading.Thread(target=self.receive_message, daemon=True)
         self.receive_thread.start()
 
     def get_username_and_server_info(self, root):
@@ -94,16 +94,12 @@ class ChatClientApp:
         window.destroy()
 
     def start_connection(self):
+        global client
         try:
-            #client.connect((self.server_ip, self.server_port))
-            #client_hello = chat_pb2.ClientHello(nickname=self.client_name)
-            #self.send(client_hello.SerializeToString())
+            client.connect((self.server_ip, self.server_port))
             # Send client name to server upon connection
-            msg = chat_pb2.ClientSendMsg(...)
-            serialized_msg = msg.SerializeToString()
-            socket.send(struct.pack("<L", len(serialized_msg)))
-            socket.send(serialized_msg)
-
+            msg = chat_pb2.ChatProtocol(register=chat_pb2.ClientRegister(nickname=f"{self.client_name}"))
+            self.send(msg)
             print(f'[CONNECTED] {self.client_name} connected successfully to the server')
         except socket.gaierror:
             messagebox.showerror("Error", "Invalid IP address. Please check and try again.")
@@ -113,15 +109,19 @@ class ChatClientApp:
             self.root.quit()
 
     def send(self, msg):
+        global client
         if not client:
             print(f"[ERROR] No client connection established")
             return
         try:
-            msg_length = len(msg)
-            send_length = str(msg_length).encode(FORMAT)
-            send_length += b' ' * (HEADER - len(send_length))
-            client.send(send_length)
-            client.send(msg)
+            serialized_msg = msg.SerializeToString()
+            msg_length = len(serialized_msg)
+
+            # Pack the length as a 32-bit (4 bytes) integer in little-endian format
+            packed_msg_length = struct.pack("<L", msg_length)
+
+            client.send(packed_msg_length)
+            client.send(serialized_msg)
         except Exception as e:
             print(f'[ERROR] {e}')
             messagebox.showerror("Error", "Message sending failed")
@@ -134,38 +134,44 @@ class ChatClientApp:
                 client.close()
                 self.root.quit()
             else:
-                client_msg = chat_pb2.ClientSendMsg(msg=f"{self.client_name}: {self.name_color}: {msg}")
-                self.send(client_msg.SerializeToString())
-                full_msg = f"{self.client_name}: {self.name_color}: {msg}"
-                self.update_chat_log(full_msg)  # Update chat log immediately after sending
+                client_msg = chat_pb2.ChatProtocol(send=chat_pb2.ClientSendMsg(msg=f"{self.name_color}: {msg}"))
+                self.send(client_msg)
+                incoming_msg = chat_pb2.ClientRecvMsg(msg=f"{self.name_color}: {msg}", sender=self.client_name)
+                #full_msg = f"{self.client_name}: {self.name_color}: {msg}"
+                self.update_chat_log(incoming_msg)  # Update chat log immediately after sending
             self.message_input.delete(0, ctk.END)
 
-    def receive_messages(self):
+    def receive_message(self):
+        global client
         while True:
             try:
-                msg_length = client.recv(HEADER).decode(FORMAT)
-                if msg_length:
-                    msg_length = int(msg_length.strip())
-                    msg_data = client.recv(msg_length)
-                    client_msg = chat_pb2.ClientSendMsg()
-                    client_msg.ParseFromString(msg_data)
-                    self.update_chat_log(f"{client_msg.msg}")
+                msg_len_bytes = client.recv(4)
+                if not msg_len_bytes:
+                    break
+                msg_len = struct.unpack("<L", msg_len_bytes)[0]
+                msg_data = client.recv(msg_len)
+
+                client_msg = chat_pb2.ChatProtocol()
+                client_msg.ParseFromString(msg_data)
+                print("LALA1")
+                print(repr(client_msg))
+                print("LALA2")
+                message_type = client_msg.WhichOneof("message")
+                if message_type == "incoming":
+                    self.update_chat_log(client_msg.incoming)
+                else:
+                    print("UNEXPECTED")
+
             except Exception as e:
                 print(f"[ERROR] {e}")
                 break
 
-    def update_chat_log(self, msg):
+    def update_chat_log(self, incoming_msg):
+        print(repr(incoming_msg))
         self.chat_log.configure(state=ctk.NORMAL)
-
-        parts = msg.split(": ", 2)
-        if len(parts) == 3:
-            name, color, message = parts
-            self.chat_log.insert(ctk.END, f"{name}: ", name)
-            self.chat_log.tag_config(name, foreground=color)
-            self.chat_log.insert(ctk.END, f"{message}\n")
-        else:
-            self.chat_log.insert(ctk.END, msg + "\n")
-
+        self.chat_log.insert(ctk.END, f"{incoming_msg.sender}: ", "Name")
+        self.chat_log.tag_config("Name", foreground="white")
+        self.chat_log.insert(ctk.END, f"{incoming_msg.msg}\n")
         self.chat_log.yview(ctk.END)
         self.chat_log.configure(state=ctk.DISABLED)
 
