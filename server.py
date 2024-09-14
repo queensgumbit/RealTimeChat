@@ -9,67 +9,70 @@ HEADER = 64
 DISCONNECT_MSG = 'disconnect!'
 
 class ClientConnection:
-    def __init__(self, client_socket, nickname):
+    def __init__(self, client_socket):
         self.client_socket = client_socket
+        self.registered = False
+        self.nickname = ""
+    def set_nickname(self, nickname):
+        self.registered = True
         self.nickname = nickname
+    def recv_msg(self):
+        msg_len_bytes = self.client_socket.recv(4)
+        msg_len = struct.unpack("<L", msg_len_bytes)[0]
+        msg_data = self.client_socket.recv(msg_len)
+        client_msg = chat_pb2.ChatProtocol()
+        client_msg.ParseFromString(msg_data)
+        return client_msg
+
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ADDR = (SERVER, PORT)
 connected_clients = []
 
-def broadcast(message, sender_client_socket):
+
+def broadcast(client_name, message, sender_client_socket):
+    # Serialize the message
+    incoming_msg = chat_pb2.ChatProtocol(incoming=chat_pb2.ClientRecvMsg(msg=message.msg, sender=client_name))
+    print("SENDING")
+    print(repr(incoming_msg))
+    serialized_message = incoming_msg.SerializeToString()
+    # Prefix the message with its length (32-bit unsigned integer, little-endian)
+    message_length = struct.pack("<L", len(serialized_message))
     for client in connected_clients:
         if client.client_socket != sender_client_socket:
             try:
-                client.client_socket.send(message)
+                # Send the length followed by the actual message
+                client.client_socket.sendall(message_length + serialized_message)
             except Exception as e:
                 print(f"[ERROR] Failed to send message to {client.nickname}: {e}")
 
-
 def client_handler(client_socket, addr):
     try:
-        nickname_length = client_socket.recv(HEADER).decode(FORMAT)
-        if nickname_length:
-            nickname_length = int(nickname_length.strip())
-            nickname_data = client_socket.recv(nickname_length)
-            nickname_data = bytes(nickname_data)
-            client_hello = chat_pb2.ClientHello()
-            client_hello.ParseFromString(nickname_data)
-            client_name = client_hello.nickname
-            new_client = ClientConnection(client_socket, client_name)
-            connected_clients.append(new_client)
-            print(f'[CONNECTED] {client_name}is connected.')
-            connected = True
-
+        connected = True
+        client = ClientConnection(client_socket)
         while connected:
             try:
-               # msg_length = client_socket.recv(HEADER).decode(FORMAT)
-               # if msg_length:
-                   # msg_length = int(msg_length.strip())
-                   # msg_data = client_socket.recv(msg_length)
-                   # msg_data = bytes(msg_data)
-                   # client_msg = chat_pb2.ClientSendMsg()
-                   # client_msg.ParseFromString(msg_data)
-                   # msg = client_msg.msg
-                   msg_len_bytes = socket.recv(4)
-                   msg_len = struct.unpack("<L", msg_len_bytes)[0]
-                   msg_data = socket.recv(msg_len)
-                   client_msg = chat_pb2.ClientSendMsg()
-                   client_msg.ParseFromString(msg_data)
-
-                   if msg_data == DISCONNECT_MSG:
-                       connected = False
-                   else:
-                       print(f"[{client_name}] : {msg_data}")
-                       broadcast(msg_data, client_socket)
+                client_msg = client.recv_msg()
+                print(repr(client_msg))
+                message_type = client_msg.WhichOneof("message")
+                if message_type == "disconnect":
+                    connected = False
+                elif message_type == "register":
+                    client.set_nickname(client_msg.register.nickname)
+                    connected_clients.append(client)
+                    print(f'[CONNECTED] {client.nickname}is connected.')
+                elif message_type == "send":
+                    # TODO: Cannot send without registering
+                    print(f"[{client.nickname}] : {client_msg}")
+                    broadcast(client.nickname, client_msg.send, client_socket)
 
             except Exception as e:
                 print(f"[ERROR] {e}")
                 connected = False
     finally:
-        connected_clients.remove(new_client)
+        connected_clients.remove(client)
         client_socket.close()
-        print(f'[DISCONNECTED] {client_name} ({addr}) disconnected.')
+        print(f'[DISCONNECTED] {client.nickname} ({addr}) disconnected.')
 
 def bind_server():
     try:
