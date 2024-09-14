@@ -1,11 +1,28 @@
 syntax = "proto3";
 
-message ClientHello {
+message ClientRegister {
   string nickname = 1;
 }
 
 message ClientSendMsg {
   string msg = 1;
+  string color = 2;
 }
 
+message ClientDisconnectMsg {
+  string goodbye_msg = 1;
+}
 
+message ClientRecvMsg {
+  string msg = 1;
+  string sender = 2;
+}
+
+message ChatProtocol {
+  oneof message {
+    ClientDisconnectMsg disconnect = 1;
+    ClientSendMsg send = 2;
+    ClientRecvMsg incoming = 3;
+    ClientRegister register = 4;
+  }
+}
