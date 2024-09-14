@@ -14,15 +14,21 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\"\x1f\n\x0b\x43lientHello\x12\x10\n\x08nickname\x18\x01 \x01(\t\"\x1c\n\rClientSendMsg\x12\x0b\n\x03msg\x18\x01 \x01(\tb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\"\"\n\x0e\x43lientRegister\x12\x10\n\x08nickname\x18\x01 \x01(\t\"\x1c\n\rClientSendMsg\x12\x0b\n\x03msg\x18\x01 \x01(\t\"*\n\x13\x43lientDisconnectMsg\x12\x13\n\x0bgoodbye_msg\x18\x01 \x01(\t\",\n\rClientRecvMsg\x12\x0b\n\x03msg\x18\x01 \x01(\t\x12\x0e\n\x06sender\x18\x02 \x01(\t\"\xae\x01\n\x0c\x43hatProtocol\x12*\n\ndisconnect\x18\x01 \x01(\x0b\x32\x14.ClientDisconnectMsgH\x00\x12\x1e\n\x04send\x18\x02 \x01(\x0b\x32\x0e.ClientSendMsgH\x00\x12\"\n\x08incoming\x18\x03 \x01(\x0b\x32\x0e.ClientRecvMsgH\x00\x12#\n\x08register\x18\x04 \x01(\x0b\x32\x0f.ClientRegisterH\x00\x42\t\n\x07messageb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'chat_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
-  _globals['_CLIENTHELLO']._serialized_start=14
-  _globals['_CLIENTHELLO']._serialized_end=45
-  _globals['_CLIENTSENDMSG']._serialized_start=47
-  _globals['_CLIENTSENDMSG']._serialized_end=75
+  _globals['_CLIENTREGISTER']._serialized_start=14
+  _globals['_CLIENTREGISTER']._serialized_end=48
+  _globals['_CLIENTSENDMSG']._serialized_start=50
+  _globals['_CLIENTSENDMSG']._serialized_end=78
+  _globals['_CLIENTDISCONNECTMSG']._serialized_start=80
+  _globals['_CLIENTDISCONNECTMSG']._serialized_end=122
+  _globals['_CLIENTRECVMSG']._serialized_start=124
+  _globals['_CLIENTRECVMSG']._serialized_end=168
+  _globals['_CHATPROTOCOL']._serialized_start=171
+  _globals['_CHATPROTOCOL']._serialized_end=345
 # @@protoc_insertion_point(module_scope)
