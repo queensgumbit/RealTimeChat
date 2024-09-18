@@ -153,9 +153,7 @@ class ChatClientApp:
 
                 client_msg = chat_pb2.ChatProtocol()
                 client_msg.ParseFromString(msg_data)
-                print("LALA1")
                 print(repr(client_msg))
-                print("LALA2")
                 message_type = client_msg.WhichOneof("message")
                 if message_type == "incoming":
                     self.update_chat_log(client_msg.incoming)
@@ -167,11 +165,20 @@ class ChatClientApp:
                 break
 
     def update_chat_log(self, incoming_msg):
+        #should devide the incoming message into two, the first part being the color'
+        parts = incoming_msg.msg.split(':', 1)  # Split on the ':'
+        if len(parts) == 2:
+            color = parts[0]
+            message_text = parts[1]
+        else:
+            color = "white"  # Default color if parsing fails
+            message_text = incoming_msg.msg  # Fallback to the full message
+
         print(repr(incoming_msg))
         self.chat_log.configure(state=ctk.NORMAL)
-        self.chat_log.insert(ctk.END, f"{incoming_msg.sender}: ", "Name")
-        self.chat_log.tag_config("Name", foreground="white")
-        self.chat_log.insert(ctk.END, f"{incoming_msg.msg}\n")
+        self.chat_log.insert(ctk.END, f"{message_text}: ", "Name")
+        self.chat_log.tag_config("Name", foreground=color)
+        self.chat_log.insert(ctk.END, f"{message_text}\n")
         self.chat_log.yview(ctk.END)
         self.chat_log.configure(state=ctk.DISABLED)
 
