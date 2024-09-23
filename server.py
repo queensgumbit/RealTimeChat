@@ -1,8 +1,9 @@
 import socket
+import struct
 import threading
+
 import chat_pb2  # Import the generated protobuf classes
-from client import FORMAT
-import  struct
+
 SERVER = '0.0.0.0'
 PORT = 5050
 HEADER = 64
@@ -32,6 +33,15 @@ connected_clients = []
 
 def broadcast(client_name, message, sender_client_socket):
     # Serialize the message
+    '''sender_client = next((client for client in connected_clients if client.nickname == client_name), None)
+    if sender_client:
+        incoming_msg = chat_pb2.ChatProtocol(
+            incoming=chat_pb2.ClientRecvMsg(
+                msg=message.msg,
+                sender=client_name,
+                color=sender_client.color  # Use the sender's color
+            )
+        )'''
     incoming_msg = chat_pb2.ChatProtocol(incoming=chat_pb2.ClientRecvMsg(msg=message.msg, sender=client_name))
     print("SENDING")
     print(repr(incoming_msg))
