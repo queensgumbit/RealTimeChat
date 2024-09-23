@@ -90,6 +90,7 @@ class ChatClientApp:
 
     def choose_color(self, color_var, window):
         self.name_color = color_var.get()
+        color_msg = chat_pb2.ChatProtocol(color_choice=chat_pb2.ClientColor(client_id=self.client_name, color=self.name_color))
         messagebox.showinfo("Color Selected", f"You have chosen {self.name_color} for your messages.")
         window.destroy()
 
@@ -134,11 +135,13 @@ class ChatClientApp:
                 client.close()
                 self.root.quit()
             else:
-                client_msg = chat_pb2.ChatProtocol(send=chat_pb2.ClientSendMsg(msg=f"{self.name_color}: {msg}"))
+                # send the message with msg and color
+                client_msg = chat_pb2.ChatProtocol(
+                    send=chat_pb2.ClientSendMsg(msg=msg, color=self.name_color)
+                )
                 self.send(client_msg)
-                incoming_msg = chat_pb2.ClientRecvMsg(msg=f"{self.name_color}: {msg}", sender=self.client_name)
-                #full_msg = f"{self.client_name}: {self.name_color}: {msg}"
-                self.update_chat_log(incoming_msg)  # Update chat log immediately after sending
+                incoming_msg = chat_pb2.ClientRecvMsg(msg=msg, sender=self.client_name, color=self.name_color)
+                self.update_chat_log(incoming_msg)
             self.message_input.delete(0, ctk.END)
 
     def receive_message(self):
@@ -165,18 +168,12 @@ class ChatClientApp:
                 break
 
     def update_chat_log(self, incoming_msg):
-        #should devide the incoming message into two, the first part being the color'
-        parts = incoming_msg.msg.split(':', 1)  # Split on the ':'
-        if len(parts) == 2:
-            color = parts[0]
-            message_text = parts[1]
-        else:
-            color = "white"  # Default color if parsing fails
-            message_text = incoming_msg.msg  # Fallback to the full message
+        color = incoming_msg.color  # Use the color from the incoming message
+        message_text = incoming_msg.msg
 
         print(repr(incoming_msg))
         self.chat_log.configure(state=ctk.NORMAL)
-        self.chat_log.insert(ctk.END, f"{message_text}: ", "Name")
+        self.chat_log.insert(ctk.END, f"{incoming_msg.sender}: ", "Name")
         self.chat_log.tag_config("Name", foreground=color)
         self.chat_log.insert(ctk.END, f"{message_text}\n")
         self.chat_log.yview(ctk.END)
