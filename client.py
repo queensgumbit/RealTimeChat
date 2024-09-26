@@ -170,14 +170,24 @@ class ChatClientApp:
     def update_chat_log(self, incoming_msg):
         color = incoming_msg.color  # Use the color from the incoming message
         message_text = incoming_msg.msg
+        sender = incoming_msg.sender
 
         print(repr(incoming_msg))
         self.chat_log.configure(state=ctk.NORMAL)
-        self.chat_log.insert(ctk.END, f"{incoming_msg.sender}: ", "Name")
-        self.chat_log.tag_config("Name", foreground=color)
+
+        # creating a tag for each sender
+        tag_name = f"{sender}_tag"
+
+        # If the tag doesn't already exist, configure it with the specific color
+        if not tag_name in self.chat_log.tag_names():
+            self.chat_log.tag_config(tag_name, foreground=color)
+
+        self.chat_log.insert(ctk.END, f"{sender}: ", tag_name)
         self.chat_log.insert(ctk.END, f"{message_text}\n")
+
         self.chat_log.yview(ctk.END)
         self.chat_log.configure(state=ctk.DISABLED)
+
 
 def main():
     root = ctk.CTk()
