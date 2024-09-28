@@ -14,9 +14,13 @@ class ClientConnection:
         self.client_socket = client_socket
         self.registered = False
         self.nickname = ""
-    def set_nickname(self, nickname):
+        self.color = ""
+    def set_nickname_and_color(self, nickname,color):
         self.registered = True
         self.nickname = nickname
+        self.color = color
+
+
     def recv_msg(self):
         msg_len_bytes = self.client_socket.recv(4)
         msg_len = struct.unpack("<L", msg_len_bytes)[0]
@@ -26,35 +30,35 @@ class ClientConnection:
         return client_msg
 
 
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ADDR = (SERVER, PORT)
 connected_clients = []
 
 
 def broadcast(client_name, message, sender_client_socket):
-    # Serialize the message
-    '''sender_client = next((client for client in connected_clients if client.nickname == client_name), None)
+    # Find the client who sent the message
+    sender_client = next((client for client in connected_clients if client.nickname == client_name), None)
+
     if sender_client:
+        # Broadcast the message with the sender's color
         incoming_msg = chat_pb2.ChatProtocol(
             incoming=chat_pb2.ClientRecvMsg(
                 msg=message.msg,
                 sender=client_name,
-                color=sender_client.color  # Use the sender's color
+                color=sender_client.color  # Use the stored color from the client object
             )
-        )'''
-    incoming_msg = chat_pb2.ChatProtocol(incoming=chat_pb2.ClientRecvMsg(msg=message.msg, sender=client_name))
-    print("SENDING")
-    print(repr(incoming_msg))
-    serialized_message = incoming_msg.SerializeToString()
-    # Prefix the message with its length (32-bit unsigned integer, little-endian)
-    message_length = struct.pack("<L", len(serialized_message))
-    for client in connected_clients:
-        if client.client_socket != sender_client_socket:
-            try:
-                # Send the length followed by the actual message
-                client.client_socket.sendall(message_length + serialized_message)
-            except Exception as e:
-                print(f"[ERROR] Failed to send message to {client.nickname}: {e}")
+        )
+        serialized_message = incoming_msg.SerializeToString()
+        message_length = struct.pack("<L", len(serialized_message))
+
+        for client in connected_clients:
+            if client.client_socket != sender_client_socket:
+                try:
+                    client.client_socket.sendall(message_length + serialized_message)
+                except Exception as e:
+                    print(f"[ERROR] Failed to send message to {client.nickname}: {e}")
+
 
 def client_handler(client_socket, addr):
     try:
@@ -68,9 +72,10 @@ def client_handler(client_socket, addr):
                 if message_type == "disconnect":
                     connected = False
                 elif message_type == "register":
-                    client.set_nickname(client_msg.register.nickname)
+                    client.set_nickname_and_color(client_msg.register.nickname, client_msg.register.color) #sending the color and nickname together
                     connected_clients.append(client)
-                    print(f'[CONNECTED] {client.nickname}is connected.')
+                    print(f'[CONNECTED] {client.nickname} connected with color {client.color}.')
+
                 elif message_type == "send":
                     # TODO: Cannot send without registering
                     print(f"[{client.nickname}] : {client_msg}")
