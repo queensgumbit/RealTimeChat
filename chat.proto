@@ -2,12 +2,9 @@ syntax = "proto3";
 
 message ClientRegister {
   string nickname = 1;
-}
-
-message ClientColor {
-  string client_id = 1;
   string color = 2;
 }
+
 
 message ClientSendMsg {
   string msg = 1;
@@ -31,6 +28,5 @@ message ChatProtocol {
     ClientSendMsg send = 2;
     ClientRecvMsg incoming = 3;
     ClientRegister register = 4;
-    ClientColor color_choice = 5;
   }
 }
