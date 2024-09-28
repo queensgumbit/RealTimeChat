@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\"\"\n\x0e\x43lientRegister\x12\x10\n\x08nickname\x18\x01 \x01(\t\"/\n\x0b\x43lientColor\x12\x11\n\tclient_id\x18\x01 \x01(\t\x12\r\n\x05\x63olor\x18\x02 \x01(\t\"+\n\rClientSendMsg\x12\x0b\n\x03msg\x18\x01 \x01(\t\x12\r\n\x05\x63olor\x18\x02 \x01(\t\"*\n\x13\x43lientDisconnectMsg\x12\x13\n\x0bgoodbye_msg\x18\x01 \x01(\t\";\n\rClientRecvMsg\x12\x0b\n\x03msg\x18\x01 \x01(\t\x12\x0e\n\x06sender\x18\x02 \x01(\t\x12\r\n\x05\x63olor\x18\x03 \x01(\t\"\xd4\x01\n\x0c\x43hatProtocol\x12*\n\ndisconnect\x18\x01 \x01(\x0b\x32\x14.ClientDisconnectMsgH\x00\x12\x1e\n\x04send\x18\x02 \x01(\x0b\x32\x0e.ClientSendMsgH\x00\x12\"\n\x08incoming\x18\x03 \x01(\x0b\x32\x0e.ClientRecvMsgH\x00\x12#\n\x08register\x18\x04 \x01(\x0b\x32\x0f.ClientRegisterH\x00\x12$\n\x0c\x63olor_choice\x18\x05 \x01(\x0b\x32\x0c.ClientColorH\x00\x42\t\n\x07messageb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\"1\n\x0e\x43lientRegister\x12\x10\n\x08nickname\x18\x01 \x01(\t\x12\r\n\x05\x63olor\x18\x02 \x01(\t\"+\n\rClientSendMsg\x12\x0b\n\x03msg\x18\x01 \x01(\t\x12\r\n\x05\x63olor\x18\x02 \x01(\t\"*\n\x13\x43lientDisconnectMsg\x12\x13\n\x0bgoodbye_msg\x18\x01 \x01(\t\";\n\rClientRecvMsg\x12\x0b\n\x03msg\x18\x01 \x01(\t\x12\x0e\n\x06sender\x18\x02 \x01(\t\x12\r\n\x05\x63olor\x18\x03 \x01(\t\"\xae\x01\n\x0c\x43hatProtocol\x12*\n\ndisconnect\x18\x01 \x01(\x0b\x32\x14.ClientDisconnectMsgH\x00\x12\x1e\n\x04send\x18\x02 \x01(\x0b\x32\x0e.ClientSendMsgH\x00\x12\"\n\x08incoming\x18\x03 \x01(\x0b\x32\x0e.ClientRecvMsgH\x00\x12#\n\x08register\x18\x04 \x01(\x0b\x32\x0f.ClientRegisterH\x00\x42\t\n\x07messageb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,15 +22,13 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'chat_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   _globals['_CLIENTREGISTER']._serialized_start=14
-  _globals['_CLIENTREGISTER']._serialized_end=48
-  _globals['_CLIENTCOLOR']._serialized_start=50
-  _globals['_CLIENTCOLOR']._serialized_end=97
-  _globals['_CLIENTSENDMSG']._serialized_start=99
-  _globals['_CLIENTSENDMSG']._serialized_end=142
-  _globals['_CLIENTDISCONNECTMSG']._serialized_start=144
-  _globals['_CLIENTDISCONNECTMSG']._serialized_end=186
-  _globals['_CLIENTRECVMSG']._serialized_start=188
-  _globals['_CLIENTRECVMSG']._serialized_end=247
-  _globals['_CHATPROTOCOL']._serialized_start=250
-  _globals['_CHATPROTOCOL']._serialized_end=462
+  _globals['_CLIENTREGISTER']._serialized_end=63
+  _globals['_CLIENTSENDMSG']._serialized_start=65
+  _globals['_CLIENTSENDMSG']._serialized_end=108
+  _globals['_CLIENTDISCONNECTMSG']._serialized_start=110
+  _globals['_CLIENTDISCONNECTMSG']._serialized_end=152
+  _globals['_CLIENTRECVMSG']._serialized_start=154
+  _globals['_CLIENTRECVMSG']._serialized_end=213
+  _globals['_CHATPROTOCOL']._serialized_start=216
+  _globals['_CHATPROTOCOL']._serialized_end=390
 # @@protoc_insertion_point(module_scope)
