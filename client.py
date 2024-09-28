@@ -90,7 +90,7 @@ class ChatClientApp:
 
     def choose_color(self, color_var, window):
         self.name_color = color_var.get()
-        color_msg = chat_pb2.ChatProtocol(color_choice=chat_pb2.ClientColor(client_id=self.client_name, color=self.name_color))
+        self.color_msg = chat_pb2.ChatProtocol(register=chat_pb2.ClientRegister(nickname=self.client_name, color=self.name_color))
         messagebox.showinfo("Color Selected", f"You have chosen {self.name_color} for your messages.")
         window.destroy()
 
@@ -168,7 +168,7 @@ class ChatClientApp:
                 break
 
     def update_chat_log(self, incoming_msg):
-        color = incoming_msg.color  # Use the color from the incoming message
+        color = incoming_msg.color  # Use the color from the incoming message(went through the protocol)
         message_text = incoming_msg.msg
         sender = incoming_msg.sender
 
@@ -193,6 +193,7 @@ def main():
     root = ctk.CTk()
     app = ChatClientApp(root)
     root.mainloop()
+
 
 if __name__ == '__main__':
     main()
