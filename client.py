@@ -3,7 +3,7 @@ import threading
 from tkinter import simpledialog, messagebox
 import customtkinter as ctk
 from tkinter import Toplevel
-import chat_pb2  # Import the generated protobuf classes
+import chat_pb2 
 import struct
 PORT = 5050
 FORMAT = 'utf-8'
@@ -15,7 +15,6 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 class ChatClientApp:
     def __init__(self, root):
         self.root = root
-        #self.chat_pb2 = chat_pb2
         self.root.title("Chatic - Real time chat")
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("green")
@@ -54,7 +53,7 @@ class ChatClientApp:
     def get_username_and_server_info(self, root):
         dialog_window = Toplevel(root)
         dialog_window.geometry("800x800")
-        dialog_window.withdraw()  # Hide the dialog window
+        dialog_window.withdraw() 
 
         self.client_name = simpledialog.askstring("Username", "What's your name?", parent=dialog_window)
         if not self.client_name:
@@ -79,7 +78,7 @@ class ChatClientApp:
         color_label = ctk.CTkLabel(color_window, text="Choose your name color:", corner_radius=3, text_color="#65a9c2")
         color_label.pack(pady=10)
 
-        color_options = ['red', 'blue', 'green', 'yellow', 'purple', 'orange']
+        color_options = ['white','red', 'blue', 'green', 'yellow', 'purple', 'orange']
         color_var = ctk.StringVar(value=color_options[0])
 
         color_menu = ctk.CTkOptionMenu(color_window, variable=color_var, values=color_options)
@@ -90,7 +89,8 @@ class ChatClientApp:
 
     def choose_color(self, color_var, window):
         self.name_color = color_var.get()
-        self.color_msg = chat_pb2.ChatProtocol(register=chat_pb2.ClientRegister(nickname=self.client_name, color=self.name_color))
+        self.color_and_nickname = chat_pb2.ChatProtocol(register=chat_pb2.ClientRegister(nickname=self.client_name, color=self.name_color))
+        self.send(self.color_and_nickname)
         messagebox.showinfo("Color Selected", f"You have chosen {self.name_color} for your messages.")
         window.destroy()
 
@@ -98,9 +98,6 @@ class ChatClientApp:
         global client
         try:
             client.connect((self.server_ip, self.server_port))
-            # Send client name to server upon connection
-            msg = chat_pb2.ChatProtocol(register=chat_pb2.ClientRegister(nickname=f"{self.client_name}"))
-            self.send(msg)
             print(f'[CONNECTED] {self.client_name} connected successfully to the server')
         except socket.gaierror:
             messagebox.showerror("Error", "Invalid IP address. Please check and try again.")
@@ -118,7 +115,6 @@ class ChatClientApp:
             serialized_msg = msg.SerializeToString()
             msg_length = len(serialized_msg)
 
-            # Pack the length as a 32-bit (4 bytes) integer in little-endian format
             packed_msg_length = struct.pack("<L", msg_length)
 
             client.send(packed_msg_length)
@@ -159,7 +155,7 @@ class ChatClientApp:
                 print(repr(client_msg))
                 message_type = client_msg.WhichOneof("message")
                 if message_type == "incoming":
-                    self.update_chat_log(client_msg.incoming)
+                    self.update_chat_log(client_msg.incoming) 
                 else:
                     print("UNEXPECTED")
 
@@ -178,7 +174,6 @@ class ChatClientApp:
         # creating a tag for each sender
         tag_name = f"{sender}_tag"
 
-        # If the tag doesn't already exist, configure it with the specific color
         if not tag_name in self.chat_log.tag_names():
             self.chat_log.tag_config(tag_name, foreground=color)
 
