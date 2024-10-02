@@ -38,7 +38,7 @@ connected_clients = []
 
 def broadcast(client_name, message, sender_client_socket):
     # Find the client who sent the message
-    sender_client = next((client for client in connected_clients if client.nickname == client_name), None)
+    sender_client = next((client for client in connected_clients if client.nickname == client_name), None) #The next() function retrieves the first item from an iterator or generator - it no match found it returns none
 
     if sender_client:
         # Broadcast the message with the sender's color
@@ -77,7 +77,6 @@ def client_handler(client_socket, addr):
                     print(f'[CONNECTED] {client.nickname} connected with color {client.color}.')
 
                 elif message_type == "send":
-                    # TODO: Cannot send without registering
                     print(f"[{client.nickname}] : {client_msg}")
                     broadcast(client.nickname, client_msg.send, client_socket)
 
